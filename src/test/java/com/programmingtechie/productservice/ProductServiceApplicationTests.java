@@ -58,6 +58,33 @@ class ProductServiceApplicationTests {
 
 		Assertions.assertEquals(1,productRepository.findAll().size());
 	}
+
+	@Test
+	void shouldGetAllProducts() throws Exception {
+		ProductRequest productRequest = getProductRequest();
+		String productRequestString = objectMapper.writeValueAsString(productRequest);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/product")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(productRequestString)
+		);
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/product")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(productRequestString)
+		);
+
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/api/product")
+				.contentType(MediaType.APPLICATION_JSON)
+		).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
+
+		List<ProductResponse> actual = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<ProductResponse>>() {});
+		ProductResponse first = actual.get(0);
+		ProductResponse second = actual.get(1);
+
+		Assertions.assertEquals("iPhone 13", first.getName());
+		Assertions.assertEquals("iPhone 13", second.getName());
+	}
+
 	private ProductRequest getProductRequest() {
 		return ProductRequest.builder()
 				.name("iPhone 13")
